@@ -1,0 +1,402 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: ConsensusAI - Autonomous AI Governance and Decision Platform
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: tasks
+    description: Task operations
+  - name: capsules
+    description: Memory capsule operations
+  - name: deliberations
+    description: Agent deliberation operations
+  - name: dashboard
+    description: Dashboard summary operations
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /tasks:
+    get:
+      operationId: listTasks
+      tags: [tasks]
+      summary: List all tasks
+      responses:
+        "200":
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+    post:
+      operationId: createTask
+      tags: [tasks]
+      summary: Create and execute a new task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskInput"
+      responses:
+        "201":
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          description: Bad request
+
+  /tasks/{id}:
+    get:
+      operationId: getTask
+      tags: [tasks]
+      summary: Get a task by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Task details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "404":
+          description: Not found
+
+  /tasks/{id}/override:
+    post:
+      operationId: overrideTask
+      tags: [tasks]
+      summary: Human-in-the-loop override for a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OverrideInput"
+      responses:
+        "200":
+          description: Override applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "404":
+          description: Not found
+
+  /tasks/{id}/deliberations:
+    get:
+      operationId: getTaskDeliberations
+      tags: [deliberations]
+      summary: Get all agent deliberations for a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of deliberations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Deliberation"
+
+  /tasks/{id}/capsule:
+    get:
+      operationId: getTaskCapsule
+      tags: [capsules]
+      summary: Get the cryptographic memory capsule for a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Capsule details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Capsule"
+        "404":
+          description: Not found
+
+  /tasks/{id}/audit-export:
+    get:
+      operationId: exportAuditLog
+      tags: [capsules]
+      summary: Export full audit log for a task as JSON-LD
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Audit export
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditExport"
+        "404":
+          description: Not found
+
+  /capsules:
+    get:
+      operationId: listCapsules
+      tags: [capsules]
+      summary: List all memory capsules (chained audit trail)
+      responses:
+        "200":
+          description: List of capsules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Capsule"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get platform dashboard summary statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent task activity feed
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    TaskInput:
+      type: object
+      required: [command, context]
+      properties:
+        command:
+          type: string
+          minLength: 1
+          description: Operational command text
+        context:
+          type: string
+          description: Environmental/telemetry context JSON string
+        urgencyLevel:
+          type: ["string", "null"]
+          enum: [low, medium, high, critical, null]
+          description: Override urgency classification
+
+    OverrideInput:
+      type: object
+      required: [action, rationale]
+      properties:
+        action:
+          type: string
+          description: Human override action
+        rationale:
+          type: string
+          description: Reason for override
+
+    Task:
+      type: object
+      required: [id, command, context, status, routingPath, urgencyScore, finalAction, consensusScore, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        command:
+          type: string
+        context:
+          type: string
+        status:
+          type: string
+          enum: [pending, fast_path, debating, completed, failed, overridden]
+        routingPath:
+          type: string
+          enum: [fast_path, cognitive_debate]
+        urgencyScore:
+          type: number
+        finalAction:
+          type: ["string", "null"]
+        consensusScore:
+          type: ["number", "null"]
+        overrideAction:
+          type: ["string", "null"]
+        overrideRationale:
+          type: ["string", "null"]
+        executionTimeMs:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    Deliberation:
+      type: object
+      required: [id, taskId, agentName, agentRole, proposal, priorityWeight, vetoed, createdAt]
+      properties:
+        id:
+          type: integer
+        taskId:
+          type: integer
+        agentName:
+          type: string
+        agentRole:
+          type: string
+          enum: [planner, risk, resource, ethics]
+        proposal:
+          type: string
+        reasoning:
+          type: ["string", "null"]
+        priorityWeight:
+          type: number
+        vetoed:
+          type: boolean
+        vetoReason:
+          type: ["string", "null"]
+        confidenceScore:
+          type: number
+        createdAt:
+          type: string
+
+    Capsule:
+      type: object
+      required: [id, taskId, blockHash, previousHash, blockIndex, verified, createdAt]
+      properties:
+        id:
+          type: integer
+        taskId:
+          type: integer
+        blockHash:
+          type: string
+        previousHash:
+          type: string
+        blockIndex:
+          type: integer
+        payload:
+          type: ["string", "null"]
+        verified:
+          type: boolean
+        createdAt:
+          type: string
+
+    AuditExport:
+      type: object
+      required: [context, taskId, command, finalAction, capsule, deliberations, chainValid]
+      properties:
+        context:
+          type: string
+        taskId:
+          type: integer
+        command:
+          type: string
+        finalAction:
+          type: string
+        capsule:
+          $ref: "#/components/schemas/Capsule"
+        deliberations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Deliberation"
+        chainValid:
+          type: boolean
+
+    DashboardStats:
+      type: object
+      required: [totalTasks, fastPathCount, cognitiveDebateCount, completedCount, failedCount, overriddenCount, avgConsensusScore, avgExecutionTimeMs, chainIntegrityRate]
+      properties:
+        totalTasks:
+          type: integer
+        fastPathCount:
+          type: integer
+        cognitiveDebateCount:
+          type: integer
+        completedCount:
+          type: integer
+        failedCount:
+          type: integer
+        overriddenCount:
+          type: integer
+        avgConsensusScore:
+          type: number
+        avgExecutionTimeMs:
+          type: number
+        chainIntegrityRate:
+          type: number
+
+    ActivityItem:
+      type: object
+      required: [id, command, status, routingPath, urgencyScore, createdAt]
+      properties:
+        id:
+          type: integer
+        command:
+          type: string
+        status:
+          type: string
+        routingPath:
+          type: string
+        urgencyScore:
+          type: number
+        finalAction:
+          type: ["string", "null"]
+        createdAt:
+          type: string
