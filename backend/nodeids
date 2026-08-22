@@ -1,4 +1,0 @@
-[
-  "tests/test_auth.py::test_jwt_token_generation",
-  "tests/test_auth.py::test_password_hashing"
-]
