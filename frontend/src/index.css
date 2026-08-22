@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg-dark: #0B0F17;
+    --color-bg-darker: #07090F;
+    --color-bg-card: #111827;
+  }
+
+  body {
+    background-color: #0B0F17;
+    color: #F8FAFC;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #07090F;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1E293B;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Giant Ghost Typography Style
+   --------------------------------------------------------------------- */
+.giant-ghost-typography {
+  font-family: 'Anton', sans-serif;
+  font-size: clamp(90px, 26vw, 380px);
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.05);
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+  transition: all 650ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------------------------------------------------------------------
+   Glassmorphism & Institutional Cards
+   --------------------------------------------------------------------- */
+.mission-card {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  transition: border-color 300ms ease, box-shadow 300ms ease;
+}
+
+.mission-card:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+}
+
+.mission-panel-glow {
+  position: relative;
+}
+.mission-panel-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(100, 230, 165, 0.1), transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------
+   Status Pulse Animations
+   --------------------------------------------------------------------- */
+@keyframes status-beacon-pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(100, 230, 165, 0.7); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 8px rgba(100, 230, 165, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(100, 230, 165, 0); }
+}
+
+.status-beacon-active {
+  animation: status-beacon-pulse 2s infinite;
+}
+
+/* Cinematic Transitions */
+.cinematic-transition {
+  transition: all 650ms cubic-bezier(0.4, 0, 0.2, 1);
+}
